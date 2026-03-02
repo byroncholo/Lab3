@@ -80,9 +80,6 @@ int main() {
     std::cout << "Wrote CSV: " << outFile << "\n";
     std::cout << "Ignore this value (prevents optimization): " << sink << "\n";
 
-    // Excel plotting suggestion:
-    // 1) Open lcg_empirical.csv
-    // 2) Insert PivotTable: Rows=n, Values=Average of time_ms
-    // 3) Insert Scatter chart: X=n, Y=Avg time_ms
     return 0;
+
 }
