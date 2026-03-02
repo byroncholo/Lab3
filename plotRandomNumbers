@@ -1,0 +1,120 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+from scipy.interpolate import PchipInterpolator
+
+# ---- Load CSV ----
+# If your file is in the same folder, use:
+# df = pd.read_csv("lcg_summary.csv")
+
+# For your uploaded file in this environment:
+csv_path = "lcg_summary.csv"
+df = pd.read_csv(csv_path)
+
+
+# Ensure sorted by n
+df = df.sort_values("n")
+
+# ---- Plot 1: avg_ms vs n ----
+# plt.figure()
+# plt.scatter(df["n"], df["avg_ms"])
+# plt.xlabel("n")
+# plt.ylabel("Average time (ms)")
+# plt.title("LCG Empirical Runtime: avg_ms vs n")
+# plt.grid(True)
+# plt.tight_layout()
+# plt.show()
+
+# ------------- Plot 1 with fitting -----------------
+
+
+# Data for plot 1
+x1 = df["n"].to_numpy(dtype=float)
+y1 = df["avg_ms"].to_numpy(dtype=float)
+
+# Linear regression: y = c + d*x
+A1 = np.column_stack([np.ones_like(x1), x1])
+c, d = np.linalg.lstsq(A1, y1, rcond=None)[0]
+
+# Predictions for line
+x1_fit = np.linspace(x1.min(), x1.max(), 800)
+y1_fit = c + d * x1_fit
+
+# R^2
+y1_pred = c + d * x1
+ss_res1 = np.sum((y1 - y1_pred) ** 2)
+ss_tot1 = np.sum((y1 - np.mean(y1)) ** 2)
+r2_1 = 1 - ss_res1 / ss_tot1
+
+# Plot with fitted line
+plt.figure()
+plt.scatter(x1, y1, label="data")
+plt.plot(x1_fit, y1_fit, color = "red", label=f"Fit: avg_ms = c + d·n\nc={c:.3e}, d={d:.3e}, R²={r2_1:.4f}")
+plt.xlabel("n")
+plt.ylabel("Average time (ms)")
+plt.title("LCG Empirical Runtime: avg_ms vs n (Linear Fit)")
+plt.grid(True)
+plt.tight_layout()
+plt.legend()
+plt.show()
+
+print(f"Linear model: avg_ms(n) = {c:.8e} + {d:.8e} * n")
+print(f"R^2 = {r2_1:.8f}")
+
+
+
+
+
+
+
+
+
+# ---- Plot 2: ms_per_op vs n ----
+# plt.figure()
+# plt.scatter(df["n"], df["ms_per_op"])
+# plt.xlabel("n")
+# plt.ylabel("ms per operation (avg_ms / n)")
+# plt.title("LCG Empirical Runtime: ms_per_op vs n")
+# plt.grid(True)
+# plt.tight_layout()
+# plt.show()
+
+
+# ---------
+
+
+x = df["n"].to_numpy(dtype=float)
+y = df["ms_per_op"].to_numpy(dtype=float)
+
+# Log regression: y = a + b*ln(x)
+logx = np.log(x)
+A = np.column_stack([np.ones_like(logx), logx])
+a, b = np.linalg.lstsq(A, y, rcond=None)[0]
+
+# Predictions
+x_fit = np.linspace(x.min(), x.max(), 800)
+y_fit = a + b * np.log(x_fit)
+
+# R^2
+y_pred = a + b * logx
+ss_res = np.sum((y - y_pred) ** 2)
+ss_tot = np.sum((y - np.mean(y)) ** 2)
+r2 = 1 - ss_res / ss_tot
+
+# Plot
+plt.figure()
+plt.scatter(x, y, label="data")
+plt.plot(x_fit, y_fit, color="red", label=f"Regression: y = a + b ln(n)\na={a:.3e}, b={b:.3e}, R²={r2:.4f}")
+plt.xlabel("n")
+plt.ylabel("ms_per_op (avg_ms / n)")
+plt.title("Logarithmic Regression Fit")
+plt.grid(True)
+plt.tight_layout()
+plt.legend()
+plt.show()
+
+print(f"Regression model: ms_per_op(n) = {a:.8e} + {b:.8e} * ln(n)")
+print(f"R^2 = {r2:.8f}")
+
+
+
